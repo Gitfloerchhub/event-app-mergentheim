@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🚻 WC-Finder – Kurparkfest 2025</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #005f8e;
+            --wc:      #0288d1;
+            --green:   #2e7d32;
+            --red:     #c62828;
+            --bg:      #f0f4f8;
+            --card:    #ffffff;
+            --text:    #1a1a2e;
+            --sub:     #5a6370;
+            --radius:  16px;
+            --shadow:  0 4px 24px rgba(0,0,0,0.13);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ─────────────────────────── */
+        header {
+            background: var(--primary);
+            color: #fff;
+            padding: 14px 18px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+        }
+        header .icon { font-size: 28px; line-height: 1; }
+        header h1 { font-size: 17px; font-weight: 800; line-height: 1.2; }
+        header p  { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+        header a  {
+            margin-left: auto;
+            color: rgba(255,255,255,0.85);
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        header a:hover { background: rgba(255,255,255,0.25); }
+
+        /* ── MAP ────────────────────────────── */
+        #map {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+        }
+
+        /* ── BOTTOM PANEL ───────────────────── */
+        .bottom {
+            background: var(--card);
+            border-radius: var(--radius) var(--radius) 0 0;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+            padding: 18px 20px 24px;
+            flex-shrink: 0;
+        }
+
+        /* Status-Zeile */
+        .status {
+            font-size: 13px;
+            color: var(--sub);
+            margin-bottom: 12px;
+            min-height: 18px;
+            text-align: center;
+        }
+
+        /* Info-Karte der nächsten Toilette */
+        .wc-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #e8f4fd;
+            border: 2px solid var(--wc);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+        }
+        .wc-icon {
+            width: 44px; height: 44px;
+            background: var(--wc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            color: #fff;
+        }
+        .wc-info { flex: 1; min-width: 0; }
+        .wc-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .wc-desc {
+            font-size: 12px;
+            color: var(--sub);
+            margin-top: 2px;
+        }
+        .wc-dist {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--wc);
+            white-space: nowrap;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 10px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary {
+            background: #e8f4fd;
+            color: var(--wc);
+            border: 2px solid var(--wc);
+        }
+        .btn-secondary:hover { background: #d0e9f9; }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── POPUP ───────────────────────────── */
+        .leaflet-popup-content-wrapper { border-radius: 12px; }
+        .leaflet-popup-content {
+            margin: 12px 16px;
+            font-family: 'Open Sans', sans-serif;
+            min-width: 160px;
+        }
+        .popup-title { font-weight: 800; font-size: 14px; color: var(--text); }
+        .popup-sub   { font-size: 12px; color: var(--sub); margin-top: 3px; }
+
+        /* Routing-Linie */
+        .route-line { stroke: #005f8e; stroke-dasharray: 8,5; }
+
+        /* Ladezustand */
+        .loading { opacity: 0.5; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="icon">🚻</div>
+    <div>
+        <h1>WC-Finder</h1>
+        <p>Kurparkfest Bad Mergentheim 2025</p>
+    </div>
+    <a href="index.html">← Karte</a>
+</header>
+
+<div id="map"></div>
+
+<div class="bottom">
+    <div class="status" id="status">Standort wird ermittelt …</div>
+
+    <div class="wc-card" id="wcCard" style="display:none">
+        <div class="wc-icon">🚻</div>
+        <div class="wc-info">
+            <div class="wc-name" id="wcName">–</div>
+            <div class="wc-desc" id="wcDesc">–</div>
+        </div>
+        <div class="wc-dist" id="wcDist">–</div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-primary" id="btnLocate" onclick="findNearest()">
+            <span>📍</span> Nächstes WC finden
+        </button>
+        <button class="btn btn-secondary" id="btnNav" onclick="openGoogleMaps()" disabled>
+            <span>🗺</span> Navigation
+        </button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── WC-Standorte (aus CSV) ───────────────────────────────────────
+const WCs = [
+    { name: 'WC Haus des Gastes',     desc: 'barrierefrei',              lat: 49.4938175, lng: 9.7817386 },
+    { name: 'WC Toilettenwagen',      desc: 'Toilettenwagen an der Fontäne', lat: 49.4941201, lng: 9.781269  },
+    { name: 'WC Kurpark Mitte',       desc: '',                          lat: 49.4940068, lng: 9.7828274 },
+    { name: 'WC am Café Amadeus',     desc: 'barrierefrei',              lat: 49.4934065, lng: 9.7839551 }
+];
+
+// ── Karte ────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl: false })
+    .setView([49.4941, 9.7825], 17);
+
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    maxZoom: 20
+}).addTo(map);
+
+// ── WC-Marker auf Karte ──────────────────────────────────────────
+const wcMarkers = [];
+
+WCs.forEach((wc, i) => {
+    const icon = L.divIcon({
+        className: '',
+        html: `<div style=\"
+            width:34px;height:34px;border-radius:50%;
+            background:#0288d1;border:3px solid #fff;
+            display:flex;align-items:center;justify-content:center;
+            font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3);
+            cursor:pointer;\">🚻</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -20]
+    });
+
+    const m = L.marker([wc.lat, wc.lng], { icon })
+        .addTo(map)
+        .bindPopup(`
+            <div class=\"popup-title\">🚻 ${wc.name}</div>
+            ${wc.desc ? `<div class=\"popup-sub\">${wc.desc}</div>` : ''}
+        `);
+    wcMarkers.push(m);
+});
+
+// ── Zustand ──────────────────────────────────────────────────────
+let userPos     = null;
+let userMarker  = null;
+let userCircle  = null;
+let routeLine   = null;
+let nearestWC   = null;
+
+// ── Entfernung (Haversine, in Metern) ────────────────────────────
+function haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2
+            + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180)
+            * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function formatDist(m) {
+    return m < 1000 ? `${Math.round(m)} m` : `${(m/1000).toFixed(1)} km`;
+}
+
+// ── Fußgänger-Route via OSRM (kostenlos, kein API-Key) ───────────
+async function fetchRoute(fromLat, fromLng, toLat, toLng) {
+    const url = `https://router.project-osrm.org/route/v1/foot/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes.length > 0) {
+            return {
+                coords: data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]),
+                duration: data.routes[0].duration,  // Sekunden
+                distance: data.routes[0].distance   // Meter
+            };
+        }
+    } catch (e) { /* Fallback: Luftlinie */ }
+    return null;
+}
+
+// ── Hauptfunktion: Nächstes WC finden ───────────────────────────
+function setStatus(msg) {
+    document.getElementById('status').textContent = msg;
+}
+
+async function findNearest() {
+    const btn = document.getElementById('btnLocate');
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Standort wird ermittelt …';
+    setStatus('GPS wird abgefragt …');
+
+    navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            userPos = { lat, lng };
+
+            // Nutzer-Marker aktualisieren
+            if (userCircle) { map.removeLayer(userCircle); }
+            if (userMarker) { map.removeLayer(userMarker); }
+
+            userCircle = L.circle([lat, lng], {
+                radius: pos.coords.accuracy / 2,
+                color: '#005f8e', fillColor: '#005f8e', fillOpacity: 0.1, weight: 1.5
+            }).addTo(map);
+
+            userMarker = L.circleMarker([lat, lng], {
+                radius: 10, color: '#fff', fillColor: '#005f8e',
+                fillOpacity: 1, weight: 3
+            }).addTo(map).bindPopup('<b>Du bist hier</b>').openPopup();
+
+            // Nächstes WC berechnen
+            let best = null, bestDist = Infinity;
+            WCs.forEach(wc => {
+                const d = haversine(lat, lng, wc.lat, wc.lng);
+                if (d < bestDist) { bestDist = d; best = wc; }
+            });
+            nearestWC = best;
+
+            setStatus('Route wird berechnet …');
+
+            // Route holen
+            const route = await fetchRoute(lat, lng, best.lat, best.lng);
+            const realDist = route ? route.distance : bestDist;
+            const walkMin  = route ? Math.ceil(route.duration / 60) : Math.ceil(bestDist / 80);
+
+            // Alte Route entfernen
+            if (routeLine) { map.removeLayer(routeLine); }
+
+            if (route) {
+                routeLine = L.polyline(route.coords, {
+                    color: '#005f8e', weight: 5, opacity: 0.75,
+                    dashArray: '10, 8', lineJoin: 'round'
+                }).addTo(map);
+                map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+            } else {
+                // Luftlinie als Fallback
+                routeLine = L.polyline([[lat, lng], [best.lat, best.lng]], {
+                    color: '#005f8e', weight: 4, opacity: 0.6, dashArray: '8, 6'
+                }).addTo(map);
+                map.fitBounds([[lat, lng], [best.lat, best.lng]], { padding: [60, 60] });
+            }
+
+            // Ziel-Marker kurz hervorheben
+            wcMarkers[WCs.indexOf(best)].openPopup();
+
+            // UI aktualisieren
+            document.getElementById('wcCard').style.display = 'flex';
+            document.getElementById('wcName').textContent = best.name;
+            document.getElementById('wcDesc').textContent =
+                best.desc
+                    ? `${best.desc} · ca. ${walkMin} Min.`
+                    : `ca. ${walkMin} Min. zu Fuß`;
+            document.getElementById('wcDist').textContent = formatDist(realDist);
+
+            setStatus(`Nächste Toilette: ${formatDist(realDist)} entfernt (ca. ${walkMin} Min. zu Fuß)`);
+
+            document.getElementById('btnNav').disabled = false;
+            btn.disabled = false;
+            btn.innerHTML = '<span>🔄</span> Neu berechnen';
+        },
+        (err) => {
+            setStatus('⚠️ Standort konnte nicht ermittelt werden. GPS aktiviert?');
+            btn.disabled = false;
+            btn.innerHTML = '<span>📍</span> Nächstes WC finden';
+            console.error(err);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+}
+
+// ── Google Maps Fußgänger-Navigation öffnen ──────────────────────
+function openGoogleMaps() {
+    if (!nearestWC) return;
+    const dest = `${nearestWC.lat},${nearestWC.lng}`;
+    let url;
+    if (userPos) {
+        url = `https://www.google.com/maps/dir/?api=1&origin=${userPos.lat},${userPos.lng}&destination=${dest}&travelmode=walking`;
+    } else {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=walking`;
+    }
+    window.open(url, '_blank');
+}
+
+// ── Auto-Start ───────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    // Nach kurzer Pause automatisch starten
+    setTimeout(findNearest, 600);
+});
+</script>
+</body>
+</html>
