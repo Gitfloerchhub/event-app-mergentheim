@@ -17,7 +17,6 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f0f0f2; }
         #map { height: 100vh; width: 100%; z-index: 1; }
 
-        /* Wheelmap-Style Sidebar / Panel */
         .ui-container {
             position: absolute;
             top: 20px;
@@ -55,7 +54,6 @@
         }
         .filter-btn.active { background: var(--wm-blue); color: white; }
 
-        /* Wheelmap Circle Markers */
         .wm-marker {
             width: 30px;
             height: 30px;
@@ -80,9 +78,6 @@
             margin-top: 10px;
             cursor: pointer;
         }
-
-        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 5px; }
-        .popup-img { width: 100%; border-radius: 8px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -90,13 +85,11 @@
     <div id="map"></div>
 
     <div class="ui-container">
-        <!-- Logo & Title -->
         <div class="card logo-card">
             <img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo">
             <span style="font-weight: 800; font-size: 16px; color: #1c1c1e;">Kurpark App</span>
         </div>
 
-        <!-- Filter Area -->
         <div class="card">
             <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Kategorien</div>
             <div class="filter-group">
@@ -111,7 +104,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Wheelmap-ähnliches helles Design (CartoDB Positron)
         const map = L.map('map', {zoomControl: false}).setView([49.4945, 9.7830], 17);
         L.control.zoom({position: 'topright'}).addTo(map);
         
@@ -120,8 +112,9 @@
         }).addTo(map);
 
         const places = [
-            { type: 'stage', color: '#007aff', pos: [49.49528, 9.78255], title: "Wandelhalle Bühne", icon: "🎭" },
-            { type: 'stage', color: '#007aff', pos: [49.49410, 9.78325], title: "Musikmuschel", icon: "🎭" },
+            { type: 'stage', color: '#007aff', pos: [49.49360, 9.78472], title: "Musikpavillon", icon: "🎺" },
+            { type: 'stage', color: '#007aff', pos: [49.49479, 9.78164], title: "Bühne Musikpavillon", icon: "🎭" },
+            { type: 'stage', color: '#007aff', pos: [49.49492, 9.78106], title: "Bühne Klanggarten", icon: "🎵" },
             { type: 'food', color: '#f5a623', pos: [49.49475, 9.78165], title: "Café Haus des Gastes", icon: "☕" },
             { type: 'food', color: '#f5a623', pos: [49.49360, 9.78420], title: "Bistro am Gradierbau", icon: "🍔" },
             { type: 'service', color: '#7dc04c', pos: [49.49490, 9.78130], title: "WC Haus des Gastes", icon: "🚻" },
