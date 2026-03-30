@@ -9,29 +9,80 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
+        /* Farben & Styles basierend auf kur-badmergentheim.de */
+        :root {
+            --primary-blue: #003366; /* Dunkelblau aus dem Corporate Design */
+            --accent-blue: #226699;  /* Mittleres Blau für Links/Buttons */
+            --light-gray: #f4f4f4;   /* Hintergrund für Panels */
+            --border-gray: #d9d9d9;  /* Trennlinien */
+            --text-dark: #222222;    /* Haupttext */
+            --white: #ffffff;
+        }
+
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: Arial, Helvetica, sans-serif; 
+            color: var(--text-dark);
+            background-color: var(--white);
+        }
+
         #map { height: 100vh; width: 100%; }
+
+        /* Info-Panel Styling */
         .info-panel {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 20px;
             z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            max-width: 250px;
-        }
-        .info-panel button {
-            width: 100%;
-            margin-top: 5px;
-            padding: 8px;
-            cursor: pointer;
-            border: 1px solid #ccc;
+            background: var(--white);
+            padding: 20px;
             border-radius: 4px;
-            background: #f9f9f9;
+            border: 1px solid var(--border-gray);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 280px;
         }
-        .info-panel button:hover { background: #eee; }
+
+        .info-panel h3 {
+            margin: 0 0 10px 0;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 5px;
+        }
+
+        .info-panel p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        /* Button Styling im Stil der Webseite */
+        .btn-kbm {
+            display: block;
+            width: 100%;
+            margin-top: 8px;
+            padding: 10px;
+            cursor: pointer;
+            border: 1px solid var(--primary-blue);
+            border-radius: 2px;
+            background: var(--white);
+            color: var(--primary-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .btn-kbm:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-secondary {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
 
         /* FAQ Modal Style */
         .modal {
@@ -42,105 +93,66 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
         }
         .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 500px;
+            background-color: var(--white);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 4px;
+            width: 85%;
+            max-width: 550px;
             position: relative;
+            border-top: 5px solid var(--primary-blue);
         }
         .close-btn {
             position: absolute;
-            right: 15px;
-            top: 10px;
-            font-size: 24px;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
             cursor: pointer;
+            color: var(--primary-blue);
         }
-        .faq-item { margin-bottom: 15px; }
-        .faq-question { font-weight: bold; color: #2c3e50; }
+        .faq-item { 
+            margin-bottom: 20px; 
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .faq-question { 
+            font-weight: bold; 
+            color: var(--primary-blue); 
+            margin-bottom: 5px;
+            display: block;
+        }
     </style>
 </head>
 <body>
-
     <div id="map"></div>
-    
     <div class="info-panel">
         <h3>Kurpark Event-App</h3>
-        <p>Willkommen in Bad Mergentheim!</p>
-        <button onclick="locateUser()">📍 Meinen Standort</button>
-        <button onclick="toggleModal(true)">❓ Häufige Fragen (FAQ)</button>
+        <p>Willkommen im Kurpark Bad Mergentheim.</p>
+        <button class="btn-kbm" onclick="locateUser()">📍 Meinen Standort</button>
+        <button class="btn-kbm btn-secondary" onclick="toggleModal(true)">❓ Häufige Fragen</button>
     </div>
-
-    <!-- FAQ Modal -->
     <div id="faqModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="toggleModal(false)&times;</span>
-            <h2>Häufige Fragen (FAQ)</h2>
+            <span class="close-btn" onclick="toggleModal(false)">&times;</span>
+            <h2 style="color: var(--primary-blue); margin-top: 0;">Service & Hilfe</h2>
             <div class="faq-item">
-                <p class="faq-question">Wann beginnt das Konzert?</p>
+                <span class="faq-question">Wann beginnt das Konzert?</span>
                 <p>Die Hauptbühne startet heute um 19:00 Uhr.</p>
             </div>
-            <div class="faq-item">
-                <p class="faq-question">Gibt es kostenloses WLAN?</p>
-                <p>Ja, nutzen Sie das Netz "Kurpark-Gast" im Bereich der Wandelhalle.</p>
-            </div>
-            <div class="faq-item">
-                <p class="faq-question">Wo finde ich Erste Hilfe?</p>
-                <p>Ein Sanitätszelt befindet sich direkt neben dem Haupteingang.</p>
-            </div>
-            <button onclick="toggleModal(false)" style="width:100%; padding:10px; margin-top:10px;">Schließen</button>
+            <button class="btn-kbm" onclick="toggleModal(false)">Schließen</button>
         </div>
     </div>
-
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
     <script>
-        // 1. Karte initialisieren
-        const map = L.map('map').setView([49.4950, 9.7820], 17);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // 2. Marker
-        const markers = [
-            { pos: [49.4952, 9.7825], title: "Bühne", icon: "🎭" },
-            { pos: [49.4948, 9.7815], title: "Essen & Trinken", icon: "🍔" },
-            { pos: [49.4945, 9.7830], title: "WCs", icon: "🚻" }
-        ];
-
-        markers.forEach(m => {
-            L.marker(m.pos).addTo(map).bindPopup(`<b>${m.title} ${m.icon}</b>`);
-        });
-
-        // 3. Standort
-        function locateUser() {
-            map.locate({setView: true, maxZoom: 18});
-        }
-
-        map.on('locationfound', function(e) {
-            L.circle(e.latlng, {radius: e.accuracy / 2, color: 'blue'}).addTo(map);
-            L.circleMarker(e.latlng, {radius: 8, color: 'white', fillColor: '#2196F3', fillOpacity: 1}).addTo(map)
-                .bindPopup("Du bist hier").openPopup();
-        });
-
-        // 4. FAQ Modal Steuerung
-        function toggleModal(show) {
-            document.getElementById('faqModal').style.display = show ? 'block' : 'none';
-        }
-
-        // Schließen wenn man außerhalb klickt
-        window.onclick = function(event) {
-            let modal = document.getElementById('faqModal');
-            if (event.target == modal) {
-                toggleModal(false);
-            }
-        }
+        const map = L.map('map', { zoomControl: false }).setView([49.4950, 9.7820], 17);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        function locateUser() { map.locate({setView: true, maxZoom: 18}); }
+        function toggleModal(show) { document.getElementById('faqModal').style.display = show ? 'block' : 'none'; }
     </script>
 </body>
 </html>
