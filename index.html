@@ -2,630 +2,473 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kurpark Navigator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kurparkfest Bad Mergentheim 2025</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wm-blue: #007aff;
-            --wm-green: #7dc04c;
-            --wm-orange: #f5a623;
-            --wm-gray: #8e8e93;
-            --bg-white: #ffffff;
+            /* Farbpalette angelehnt an kur-badmergentheim.de */
+            --primary:   #005f8e;   /* Kurpark-Dunkelblau */
+            --accent:    #e8a020;   /* Warmes Gold/Orange  */
+            --green:     #2e7d32;   /* Sicherheit / Eingänge */
+            --red:       #c62828;   /* Erste Hilfe */
+            --purple:    #7b1fa2;   /* Getränke / Wein */
+            --food:      #0277bd;   /* Essen-Stände */
+            --kids:      #c2185b;   /* Kinder */
+            --stage:     #f9a825;   /* Bühnen */
+            --bg:        #f4f6f8;
+            --card-bg:   #ffffff;
+            --text:      #1a1a2e;
+            --subtext:   #5a6370;
+            --radius:    14px;
+            --shadow:    0 4px 20px rgba(0,0,0,0.13);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #f0f0f2;
+            margin: 0; padding: 0;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
         }
 
         #map {
-            height: 100vh;
-            width: 100%;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100dvh;
+            width: 100vw;
+            z-index: 1;
         }
 
-        .ui-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+        /* ── PANEL LINKS ─────────────────────────────────── */
+        .panel {
+            position: fixed;
+            top: 16px; left: 16px;
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             pointer-events: none;
-            width: 290px;
+            max-width: 300px;
         }
 
         .card {
-            background: var(--bg-white);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 14px 16px;
             pointer-events: auto;
         }
 
+        /* Logo-Card */
         .logo-card {
             display: flex;
             align-items: center;
             gap: 10px;
+            padding: 10px 14px;
+        }
+        .logo-card img { height: 38px; width: auto; }
+        .logo-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+        .logo-sub {
+            font-size: 11px;
+            color: var(--subtext);
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
-        .logo-card img {
-            height: 40px;
-            width: auto;
-        }
-
-        .filter-title {
-            font-size: 12px;
-            color: #8e8e93;
-            margin-bottom: 10px;
+        /* Filter-Buttons */
+        .filter-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--subtext);
             text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
         }
-
         .filter-group {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
         }
-
         .filter-btn {
-            background: #f2f2f7;
-            border: none;
-            padding: 8px 12px;
+            background: var(--bg);
+            border: 1.5px solid #dce0e6;
+            padding: 6px 11px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: #3a3a3c;
+            color: var(--text);
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.18s;
+            font-family: inherit;
         }
-
+        .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
         .filter-btn.active {
-            background: var(--wm-blue);
-            color: white;
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
         }
 
-        .btn-main {
+        /* Standort-Button */
+        .btn-locate {
             width: 100%;
-            background: var(--wm-blue);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
+            padding: 11px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
             margin-top: 10px;
             cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-main:hover {
-            background: #005ec4;
-        }
-
-        .wm-marker {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 2px solid white;
+            transition: background 0.2s;
+            font-family: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            gap: 6px;
         }
+        .btn-locate:hover { background: #004870; }
 
+        /* ── MARKER ──────────────────────────────────────── */
+        .map-marker {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 2.5px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .map-marker:hover { transform: scale(1.15); }
+
+        /* ── POPUP ───────────────────────────────────────── */
         .leaflet-popup-content-wrapper {
             border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.16);
+            padding: 0;
         }
-
         .leaflet-popup-content {
-            margin: 12px 16px;
-            font-size: 14px;
-            line-height: 1.4;
+            margin: 0;
+            padding: 14px 16px;
+            font-family: 'Open Sans', sans-serif;
+            min-width: 180px;
         }
-
-        .popup-title {
+        .popup-cat {
+            font-size: 10px;
             font-weight: 700;
-            color: #1c1c1e;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
             margin-bottom: 4px;
         }
-
-        .popup-meta {
-            color: #6e6e73;
+        .popup-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .popup-desc {
             font-size: 12px;
+            color: var(--subtext);
+            line-height: 1.5;
         }
 
-        .hint {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #6e6e73;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="map"></div>
-
-    <div class="ui-container">
-        <div class="card logo-card">
-            <img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Bad Mergentheim Logo">
-            <span style="font-weight: 800; font-size: 16px; color: #1c1c1e; line-height: 1.2;">Kurpark App</span>
-        </div>
-
-        <div class="card">
-            <div class="filter-title">Kategorien</div>
-            <div class="filter-group">
-                <button class="filter-btn active" onclick="updateFilter('all', this)">Alle</button>
-                <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
-                <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastro</button>
-                <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service</button>
-            </div>
-            <button class="btn-main" onclick="locateUser()">📍 Meinen Standort</button>
-            <div class="hint">Wheelmap-ähnliche Ansicht mit farbigen Markern</div>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map', { zoomControl: false }).setView([49.4946, 9.7825], 18);
-        L.control.zoom({ position: 'topright' }).addTo(map);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors © CARTO'
-        }).addTo(map);
-
-        const places = [
-            // Bühnen
-            { type: 'stage', color: '#007aff', pos: [49.49360, 9.78472], title: 'Musikpavillon', icon: '🎺', meta: '49.49360, 9.78472' },
-            { type: 'stage', color: '#007aff', pos: [49.49479, 9.78164], title: 'Bühne am Haus des Gastes', icon: '🎭', meta: '49.49479, 9.78164' },
-            { type: 'stage', color: '#007aff', pos: [49.49492, 9.78106], title: 'Bühne Klanggarten', icon: '🎵', meta: '49.49492, 9.78106' },
-
-            // Gastro
-            { type: 'food', color: '#f5a623', pos: [49.49472, 9.78178], title: 'Café Haus des Gastes', icon: '☕', meta: 'Gastronomie' },
-            { type: 'food', color: '#f5a623', pos: [49.49372, 9.78410], title: 'Bistro am Gradierbau', icon: '🍔', meta: 'Gastronomie' },
-            { type: 'food', color: '#f5a623', pos: [49.49448, 9.78220], title: 'Weinstand', icon: '🍷', meta: 'Gastronomie' },
-
-            // Service
-            { type: 'service', color: '#7dc04c', pos: [49.49488, 9.78125], title: 'WC Haus des Gastes', icon: '🚻', meta: 'Service' },
-            { type: 'service', color: '#7dc04c', pos: [49.49386, 9.78388], title: 'WC am Gradierbau', icon: '🚻', meta: 'Service' },
-            { type: 'service', color: '#7dc04c', pos: [49.49555, 9.78290], title: 'Erste Hilfe & Info', icon: 'ℹ️', meta: 'Service' }
-        ];
-
-        let currentMarkers = [];
-
-        function createPopup(p) {
-            return `
-                <div class="popup-title">${p.title}</div>
-                <div class="popup-meta">${p.meta}</div>
-                <div style="margin-top:6px; font-size: 20px;">${p.icon}</div>
-            `;
-        }
-
-        function updateFilter(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-
-            currentMarkers.forEach(m => map.removeLayer(m));
-            currentMarkers = [];
-
-            places.forEach(p => {
-                if (type === 'all' || p.type === type) {
-                    const icon = L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div class="wm-marker" style="background:${p.color}">${p.icon}</div>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    });
-
-                    const marker = L.marker(p.pos, { icon }).addTo(map).bindPopup(createPopup(p));
-                    currentMarkers.push(marker);
-                }
-            });
-        }
-
-        function locateUser() {
-            map.locate({ setView: true, maxZoom: 18 });
-        }
-
-        map.on('locationfound', function(e) {
-            L.circle(e.latlng, { radius: e.accuracy / 2, color: '#007aff' }).addTo(map);
-            L.circleMarker(e.latlng, {
-                radius: 8,
-                color: 'white',
-                fillColor: '#007aff',
-                fillOpacity: 1,
-                weight: 2
-            }).addTo(map).bindPopup('Du bist hier').openPopup();
-        });
-
-        map.on('locationerror', function(e) {
-            alert('Standort konnte nicht gefunden werden: ' + e.message);
-        });
-
-        updateFilter('all', document.querySelector('.filter-btn'));
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kurpark Navigator</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root { --wm-blue: #007aff; --wm-green: #7dc04c; --wm-orange: #f5a623; --bg-white: #ffffff; }
-        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: #f0f0f2; }
-        #map { height: 100vh; width: 100%; }
-        .ui-container { position: absolute; top: 20px; left: 20px; z-index: 1000; pointer-events: none; width: 280px; }
-        .card { background: var(--bg-white); padding: 15px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); pointer-events: auto; margin-bottom: 10px; }
-        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
-        .filter-btn { background: #f2f2f7; border: none; padding: 8px 12px; border-radius: 20px; font-weight: 600; cursor: pointer; }
-        .filter-btn.active { background: var(--wm-blue); color: white; }
-        .wm-marker { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-        .btn-main { width: 100%; background: var(--wm-blue); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <div class="ui-container">
-        <div class="card"><img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo" style="height:40px;"></div>
-        <div class="card">
-            <div class="filter-group">
-                <button class="filter-btn active" onclick="updateFilter('all', this)">Alle</button>
-                <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
-                <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastro</button>
-                <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service</button>
-            </div>
-            <button class="btn-main" onclick="locateUser()">📍 Standort finden</button>
-        </div>
-    </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map', {zoomControl: false}).setView([49.4942, 9.7825], 18);
-        L.control.zoom({position: 'topright'}).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-        const places = [
-            // DEINE 3 PRÄZISEN REFERENZPUNKTE
-            { type: 'stage', color: '#007aff', pos: [49.49360, 9.78472], title: "Musikpavillon", icon: "🎺" },
-            { type: 'stage', color: '#007aff', pos: [49.49479, 9.78164], title: "Bühne am Haus des Gastes", icon: "🎭" },
-            { type: 'stage', color: '#007aff', pos: [49.49492, 9.78106], title: "Bühne Klanggarten", icon: "🎵" },
-            // WEITERE PUNKTE (Mathematisch angepasst)
-            { type: 'food', color: '#f5a623', pos: [49.49470, 9.78150], title: "Café Haus des Gastes", icon: "☕" },
-            { type: 'food', color: '#f5a623', pos: [49.49350, 9.78430], title: "Bistro am Gradierbau", icon: "🍔" },
-            { type: 'service', color: '#7dc04c', pos: [49.49485, 9.78115], title: "WC Haus des Gastes", icon: "🚻" },
-            { type: 'service', color: '#7dc04c', pos: [49.49375, 9.78400], title: "WC am Gradierbau", icon: "🚻" }
-        ];
-
-        let currentMarkers = [];
-        function updateFilter(type, btn) {
-            if(btn) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
-            currentMarkers.forEach(m => map.removeLayer(m));
-            currentMarkers = [];
-            places.forEach(p => {
-                if (type === 'all' || p.type === type) {
-                    const icon = L.divIcon({ className: 'custom-icon', html: `<div class="wm-marker" style="background:${p.color}">${p.icon}</div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
-                    const m = L.marker(p.pos, {icon: icon}).addTo(map).bindPopup(`<b>${p.title}</b>`);
-                    currentMarkers.push(m);
-                }
-            });
-        }
-        function locateUser() { map.locate({setView: true, maxZoom: 18}); }
-        updateFilter('all');
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kurpark Navigator</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root {
-            --wm-blue: #007aff;
-            --wm-green: #7dc04c;
-            --wm-orange: #f5a623;
-            --wm-gray: #8e8e93;
-            --bg-white: #ffffff;
-        }
-
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f0f0f2; }
-        #map { height: 100vh; width: 100%; z-index: 1; }
-
-        .ui-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+        /* ── LEGENDE unten rechts ────────────────────────── */
+        .legend {
+            position: fixed;
+            bottom: 30px; right: 14px;
             z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 10px 14px;
             pointer-events: none;
+            min-width: 140px;
         }
-
-        .card {
-            background: var(--bg-white);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            pointer-events: auto;
-            width: 280px;
+        .legend-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--subtext);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 7px;
         }
-
-        .logo-card { display: flex; align-items: center; gap: 10px; }
-        .logo-card img { height: 40px; }
-
-        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
-        .filter-btn {
-            background: #f2f2f7;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #3a3a3c;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .filter-btn.active { background: var(--wm-blue); color: white; }
-
-        .wm-marker {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 2px solid white;
+        .legend-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-
-        .btn-main {
-            width: 100%;
-            background: var(--wm-blue);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="map"></div>
-
-    <div class="ui-container">
-        <div class="card logo-card">
-            <img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo">
-            <span style="font-weight: 800; font-size: 16px; color: #1c1c1e;">Kurpark App</span>
-        </div>
-
-        <div class="card">
-            <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Kategorien</div>
-            <div class="filter-group">
-                <button class="filter-btn active" onclick="updateFilter('all', this)">Alle</button>
-                <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
-                <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastro</button>
-                <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service</button>
-            </div>
-            <button class="btn-main" onclick="locateUser()">📍 Meinen Standort</button>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map', {zoomControl: false}).setView([49.4945, 9.7830], 17);
-        L.control.zoom({position: 'topright'}).addTo(map);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        const places = [
-            // BÜHNEN (Präzise Referenzpunkte)
-            { type: 'stage', color: '#007aff', pos: [49.49360, 9.78472], title: "Musikpavillon", icon: "🎺" },
-            { type: 'stage', color: '#007aff', pos: [49.49479, 9.78164], title: "Bühne Musikpavillon", icon: "🎭" },
-            { type: 'stage', color: '#007aff', pos: [49.49492, 9.78106], title: "Bühne Klanggarten", icon: "🎵" },
-            
-            // GASTRO (Korrigiert)
-            { type: 'food', color: '#f5a623', pos: [49.49475, 9.78165], title: "Café Haus des Gastes", icon: "☕" },
-            { type: 'food', color: '#f5a623', pos: [49.49360, 9.78420], title: "Bistro am Gradierbau", icon: "🍔" },
-            { type: 'food', color: '#f5a623', pos: [49.49450, 9.78200], title: "Weinstand", icon: "🍷" },
-            
-            // SERVICE (Korrigiert)
-            { type: 'service', color: '#7dc04c', pos: [49.49490, 9.78130], title: "WC Haus des Gastes", icon: "🚻" },
-            { type: 'service', color: '#7dc04c', pos: [49.49380, 9.78390], title: "WC am Gradierbau", icon: "🚻" },
-            { type: 'service', color: '#7dc04c', pos: [49.49560, 9.78290], title: "Erste Hilfe & Info", icon: "ℹ️" }
-        ];
-
-        let currentMarkers = [];
-
-        function updateFilter(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            currentMarkers.forEach(m => map.removeLayer(m));
-            currentMarkers = [];
-
-            places.forEach(p => {
-                if (type === 'all' || p.type === type) {
-                    const icon = L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div class="wm-marker" style="background:${p.color}">${p.icon}</div>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    });
-
-                    const m = L.marker(p.pos, {icon: icon}).addTo(map).bindPopup(`<b>${p.title}</b>`);
-                    currentMarkers.push(m);
-                }
-            });
-        }
-
-        function locateUser() { map.locate({setView: true, maxZoom: 18}); }
-        updateFilter('all', document.querySelector('.filter-btn'));
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kurpark Navigator</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root {
-            --wm-blue: #007aff;
-            --wm-green: #7dc04c;
-            --wm-orange: #f5a623;
-            --wm-gray: #8e8e93;
-            --bg-white: #ffffff;
-        }
-
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f0f0f2; }
-        #map { height: 100vh; width: 100%; z-index: 1; }
-
-        .ui-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            pointer-events: none;
-        }
-
-        .card {
-            background: var(--bg-white);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            pointer-events: auto;
-            width: 280px;
-        }
-
-        .logo-card { display: flex; align-items: center; gap: 10px; }
-        .logo-card img { height: 40px; }
-
-        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
-        .filter-btn {
-            background: #f2f2f7;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 12px;
             font-weight: 600;
-            color: #3a3a3c;
-            cursor: pointer;
-            transition: 0.2s;
+            color: var(--text);
         }
-        .filter-btn.active { background: var(--wm-blue); color: white; }
-
-        .wm-marker {
-            width: 30px;
-            height: 30px;
+        .legend-dot {
+            width: 14px; height: 14px;
             border-radius: 50%;
-            border: 2px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: 2px solid #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
 
-        .btn-main {
-            width: 100%;
-            background: var(--wm-blue);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
+        /* ── RESPONSIVE ──────────────────────────────────── */
+        @media (max-width: 480px) {
+            .panel { top: 12px; left: 10px; max-width: calc(100vw - 60px); }
+            .legend { bottom: 20px; right: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="map"></div>
+<div id="map"></div>
 
-    <div class="ui-container">
-        <div class="card logo-card">
-            <img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo">
-            <span style="font-weight: 800; font-size: 16px; color: #1c1c1e;">Kurpark App</span>
-        </div>
+<!-- Panel oben links -->
+<div class="panel">
 
-        <div class="card">
-            <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Kategorien</div>
-            <div class="filter-group">
-                <button class="filter-btn active" onclick="updateFilter('all', this)">Alle</button>
-                <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
-                <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastro</button>
-                <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service</button>
-            </div>
-            <button class="btn-main" onclick="locateUser()">📍 Meinen Standort</button>
+    <!-- Logo -->
+    <div class="card logo-card">
+        <img src="https://media.kur-badmergentheim.de/impressum/Logo_Kur_Bad_Mergentheim.png"
+             onerror="this.onerror=null;this.src='https://www.bad-mergentheim.de/layout/img/logo.png'"
+             alt="Kur Bad Mergentheim">
+        <div>
+            <div class="logo-title">Kurparkfest 2025</div>
+            <div class="logo-sub">Bad Mergentheim</div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map', {zoomControl: false}).setView([49.4945, 9.7830], 17);
-        L.control.zoom({position: 'topright'}).addTo(map);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+    <!-- Filter -->
+    <div class="card">
+        <div class="filter-label">Kategorien</div>
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="setFilter('all',this)">🗺 Alle</button>
+            <button class="filter-btn" onclick="setFilter('Bühnen',this)">🎭 Bühnen</button>
+            <button class="filter-btn" onclick="setFilter('Stände',this)">🍽 Stände</button>
+            <button class="filter-btn" onclick="setFilter('Eingänge',this)">🚪 Eingänge</button>
+            <button class="filter-btn" onclick="setFilter('Toiletten',this)">🚻 WC</button>
+            <button class="filter-btn" onclick="setFilter('Kinder',this)">🎠 Kinder</button>
+            <button class="filter-btn" onclick="setFilter('Sicherheit',this)">🚑 Erste Hilfe</button>
+        </div>
+        <button class="btn-locate" onclick="locateUser()">
+            <span>📍</span> Meinen Standort anzeigen
+        </button>
+    </div>
+</div>
 
-        const places = [
-            { type: 'stage', color: '#007aff', pos: [49.49360, 9.78472], title: "Musikpavillon", icon: "🎺" },
-            { type: 'stage', color: '#007aff', pos: [49.49479, 9.78164], title: "Bühne Musikpavillon", icon: "🎭" },
-            { type: 'stage', color: '#007aff', pos: [49.49492, 9.78106], title: "Bühne Klanggarten", icon: "🎵" },
-            { type: 'food', color: '#f5a623', pos: [49.49475, 9.78165], title: "Café Haus des Gastes", icon: "☕" },
-            { type: 'food', color: '#f5a623', pos: [49.49360, 9.78420], title: "Bistro am Gradierbau", icon: "🍔" },
-            { type: 'service', color: '#7dc04c', pos: [49.49490, 9.78130], title: "WC Haus des Gastes", icon: "🚻" },
-            { type: 'service', color: '#7dc04c', pos: [49.49380, 9.78390], title: "WC am Gradierbau", icon: "🚻" }
-        ];
+<!-- Legende -->
+<div class="legend">
+    <div class="legend-title">Legende</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div>Bühnen</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0277bd"></div>Essen</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7b1fa2"></div>Getränke</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2e7d32"></div>Eingänge</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0288d1"></div>WC</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c2185b"></div>Kinder</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c62828"></div>Erste Hilfe</div>
+</div>
 
-        let currentMarkers = [];
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── Karte initialisieren ─────────────────────────────────────────
+const map = L.map('map', { zoomControl: false })
+    .setView([49.4941, 9.7825], 17);
 
-        function updateFilter(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            currentMarkers.forEach(m => map.removeLayer(m));
-            currentMarkers = [];
+L.control.zoom({ position: 'topright' }).addTo(map);
 
-            places.forEach(p => {
-                if (type === 'all' || p.type === type) {
-                    const icon = L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div class="wm-marker" style="background:${p.color}">${p.icon}</div>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 20
+}).addTo(map);
 
-                    const m = L.marker(p.pos, {icon: icon}).addTo(map).bindPopup(`<b>${p.title}</b>`);
-                    currentMarkers.push(m);
-                }
-            });
+// ── Farbschema pro Kategorie / Icon-Code ─────────────────────────
+function getColor(kategorie, iconCode) {
+    if (kategorie === 'Bühnen') return '#f9a825';
+    if (kategorie === 'Eingänge') return '#2e7d32';
+    if (kategorie === 'Toiletten') return '#0288d1';
+    if (kategorie === 'Kinderattraktionen') return '#c2185b';
+    if (kategorie === 'Sicherheit') return '#c62828';
+    // Stände: Getränke (9C27B0-Icons) vs. Essen (0288D1-Icons)
+    if (iconCode && iconCode.includes('9C27B0')) return '#7b1fa2';
+    return '#0277bd'; // Standard Essen / Stände
+}
+
+function getCatLabel(kategorie) {
+    const map = {
+        'Stände': 'Stand',
+        'Bühnen': 'Bühne',
+        'Eingänge': 'Eingang / Service',
+        'Toiletten': 'WC',
+        'Kinderattraktionen': 'Kinder',
+        'Sicherheit': 'Sicherheit'
+    };
+    return map[kategorie] || kategorie;
+}
+
+function getEmoji(kategorie, iconCode) {
+    if (kategorie === 'Bühnen') return '🎭';
+    if (kategorie === 'Toiletten') return '🚻';
+    if (kategorie === 'Kinderattraktionen') return '🎠';
+    if (kategorie === 'Sicherheit') return '🚑';
+    if (kategorie === 'Eingänge') {
+        if (iconCode && iconCode.includes('1608')) return 'ℹ️';
+        return '🚪';
+    }
+    if (iconCode && iconCode.includes('9C27B0')) return '🍷';
+    if (iconCode && iconCode.includes('1798')) return '🍷';
+    if (iconCode && iconCode.includes('1879')) return '🍺';
+    if (iconCode && iconCode.includes('1517')) return '🍹';
+    if (iconCode && iconCode.includes('1534')) return '☕';
+    if (iconCode && iconCode.includes('1573')) return '🐟';
+    return '🍽';
+}
+
+// ── Alle Punkte aus CSV (nur Points, keine LineStrings) ──────────
+const places = [
+    // STÄNDE
+    { kat:'Stände', name:'Fastnachtsgesellschaft Kalrobia', desc:'Pina Colada, Touchdown, Mojito, Virgin Colada, Florida', icon:'#icon-1517-9C27B0-labelson', lat:49.4945694, lng:9.7807093 },
+    { kat:'Stände', name:'derr Hof', desc:'hausgebrautes Bio-Bier, selbstgemachte Limonade, alkoholfreie Getränke', icon:'#icon-1879-9C27B0-labelson', lat:49.494788, lng:9.7805968 },
+    { kat:'Stände', name:'Fastnachtsgesellschaft Kalrobia', desc:'Wagyu Burger', icon:'#icon-1577-0288D1-labelson', lat:49.4946731, lng:9.7805888 },
+    { kat:'Stände', name:'Becksteiner Winzer', desc:'Sekt, Secco, Wein, Wasser, Sommercocktails', icon:'#icon-1798-9C27B0-labelson', lat:49.4945058, lng:9.7810848 },
+    { kat:'Stände', name:"Kreischer's Kartoffelhütte", desc:'Spiralkartoffeln, Pommes in verschiedenen Variationen', icon:'#icon-1577-0288D1-labelson', lat:49.4940247, lng:9.7815697 },
+    { kat:'Stände', name:'Forellenzucht Dürr', desc:'Forellenspezialitäten, Kartoffelsalat, Pommes', icon:'#icon-1573-0288D1-labelson', lat:49.4940799, lng:9.7819343 },
+    { kat:'Stände', name:'Winzerhof Wille', desc:'Wein, Secco, Weincocktails', icon:'#icon-1798-9C27B0-labelson', lat:49.4941119, lng:9.782133 },
+    { kat:'Stände', name:'Bageno', desc:'Hohenloher Fruchtsäfte mit und ohne Alkohol', icon:'#icon-1798-9C27B0-labelson', lat:49.4941801, lng:9.7823219 },
+    { kat:'Stände', name:'Die Grillmeister', desc:'Coburger Bratwürste im Kornspitzbrötchen', icon:'#icon-1577-0288D1-labelson', lat:49.4943547, lng:9.7824883 },
+    { kat:'Stände', name:'Weingut Sack', desc:'Wein, Sekt und Secco', icon:'#icon-1798-9C27B0-labelson', lat:49.4948289, lng:9.7821798 },
+    { kat:'Stände', name:'SV Winzer Beckstein', desc:'Distelhäuser Ausschankwagen Bier, Radler, alkoholfreie Getränke', icon:'#icon-1879-9C27B0-labelson', lat:49.4946477, lng:9.7824399 },
+    { kat:'Stände', name:'VfB Bad Mergentheim', desc:'Herbsthäuser Ausschankwagen Pils, Radler, Weizen', icon:'#icon-1879-9C27B0-labelson', lat:49.4941266, lng:9.7828376 },
+    { kat:'Stände', name:'VfB Bad Mergentheim Abt. Tischtennis', desc:'alkoholfreie Getränke, Chilli mit & ohne Fleisch', icon:'#icon-1577-0288D1-labelson', lat:49.4940831, lng:9.7827062 },
+    { kat:'Stände', name:"Let it BeGin", desc:'Mobile Ginbar aus dem Taubertal – Cocktails und Aperitifs mit und ohne Alkohol', icon:'#icon-1517-9C27B0-labelson', lat:49.4942454, lng:9.7829723 },
+    { kat:'Stände', name:'Metzgerei Gebert Inh. Kastriot Kalludra', desc:'Steaks, Bratwurst, Feuerwurst, Pommes', icon:'#icon-1577-0288D1-labelson', lat:49.4936493, lng:9.7839561 },
+    { kat:'Stände', name:'Weingärtner Markelsheim', desc:'Wein, Secco, Sekt, Traubensaft, Mineralwasser', icon:'#icon-1798-9C27B0-labelson', lat:49.4936841, lng:9.7841654 },
+    { kat:'Stände', name:'Créperie Reinsberg', desc:'Crêpes, süß und herzhaft', icon:'#icon-1577-0288D1-labelson', lat:49.4937765, lng:9.7841063 },
+    { kat:'Stände', name:'Café Amadeus', desc:'Kaffee & Kuchen, Aperol & Co.', icon:'#icon-1534-0288D1-labelson', lat:49.4934472, lng:9.7843957 },
+    { kat:'Stände', name:'SV Harthausen', desc:'Herbsthäuser Ausschankwagen: Pils, Radler, alkoholfreie Getränke', icon:'#icon-1879-9C27B0-labelson', lat:49.4938497, lng:9.7842538 },
+    { kat:'Stände', name:"Stefans Nudeltöpfle", desc:'Sommer-Töpfle, Wildes Töpfle, BBQ-Töpfle, Puten-Töpfle', icon:'#icon-1577-0288D1-labelson', lat:49.4938235, lng:9.7844254 },
+    { kat:'Stände', name:"Schnecks Eiszauber", desc:'Soft- und Slusheis in verschiedenen Sorten', icon:'#icon-1577-0288D1-labelson', lat:49.4938479, lng:9.7845677 },
+    { kat:'Stände', name:"Cakmak's Langosch", desc:'Langosch, alkoholfreie Getränke', icon:'#icon-1577-0288D1-labelson', lat:49.493881, lng:9.7847178 },
+    { kat:'Stände', name:'Pizzeria im Weberdorf', desc:'', icon:'#icon-1651-0288D1-labelson-nodesc', lat:49.4949388, lng:9.781999 },
+    { kat:'Stände', name:"Rols's New York Cheesecake", desc:'Schokofrüchte, hausgemachter New York Cheesecake', icon:'#icon-1577-0288D1-labelson', lat:49.4940534, lng:9.7817217 },
+
+    // BÜHNEN
+    { kat:'Bühnen', name:'Bühne Kurhaus', desc:'', icon:'#icon-1502-FFD600-labelson-nodesc', lat:49.4948325, lng:9.7810359 },
+    { kat:'Bühnen', name:'Bühne Wilhelmsbau', desc:'17:00–19:30 Uhr Denise & Tobi · 20:00–24:00 Uhr TONeArt', icon:'#icon-1502-FFEA00-labelson', lat:49.4946445, lng:9.7816581 },
+    { kat:'Bühnen', name:'Bühne Musikpavillon', desc:'', icon:'#icon-1502-FFD600-labelson', lat:49.4935978, lng:9.7847072 },
+    { kat:'Bühnen', name:'Treffpunkt "Lichtkinder"', desc:'Kinder 8–12 Jahre helfen beim Aufstellen und Anzünden der bunten Lichter. Start: 19:15 Uhr', icon:'#icon-1729-E65100-labelson', lat:49.4945264, lng:9.7829693 },
+    { kat:'Bühnen', name:'ArtCafé Juhee', desc:'Kaffee, Frappé, Chai Latte, Kakao, Matcha, Tee & kleines Gebäck', icon:'#icon-1534-9C27B0-labelson', lat:49.4946426, lng:9.7812668 },
+
+    // EINGÄNGE
+    { kat:'Eingänge', name:'Eingang Lothar-Daiker-Straße', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.495326, lng:9.7816901 },
+    { kat:'Eingänge', name:'Eingang Rosengarten', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.493567, lng:9.7880117 },
+    { kat:'Eingänge', name:'Eingang Schachbrett', desc:'Eintrittspreise: Regulär 5 €, Ermäßigt 3 € – Kinder und Schwangere frei', icon:'#icon-1833-097138-labelson', lat:49.4934654, lng:9.7817384 },
+    { kat:'Eingänge', name:'Eingang Tauberbrücke', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.4937546, lng:9.7800325 },
+    { kat:'Eingänge', name:'Servicepunkt', desc:'Haus des Gastes · ☎ 07931 965 0 · Fundbüro · Suchaufrufe · Infostelle', icon:'#icon-1608-01579B-labelson', lat:49.4936936, lng:9.7818321 },
+    { kat:'Eingänge', name:'Eingang Café Amadeus', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.4931736, lng:9.7845548 },
+    { kat:'Eingänge', name:'Eingang Klinik Schwaben', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.4940098, lng:9.7858315 },
+
+    // TOILETTEN
+    { kat:'Toiletten', name:'WC', desc:'im Haus des Gastes, barrierefrei', icon:'#icon-1733-0288D1', lat:49.4938175, lng:9.7817386 },
+    { kat:'Toiletten', name:'WC', desc:'Toilettenwagen an der Fontäne', icon:'#icon-1733-0288D1', lat:49.4941201, lng:9.781269 },
+    { kat:'Toiletten', name:'WC', desc:'', icon:'#icon-1733-0288D1-nodesc', lat:49.4940068, lng:9.7828274 },
+    { kat:'Toiletten', name:'WC', desc:'am Café Amadeus, barrierefrei', icon:'#icon-1733-0288D1', lat:49.4934065, lng:9.7839551 },
+
+    // KINDERATTRAKTIONEN
+    { kat:'Kinderattraktionen', name:'Eisenbahn', desc:'', icon:'#icon-1717-C2185B-nodesc', lat:49.4942882, lng:9.7815712 },
+    { kat:'Kinderattraktionen', name:'Hüpfburg Minis', desc:'Hüpfburg nur für Kinder bis zum Alter von 4 Jahren', icon:'#icon-1598-C2185B', lat:49.4943491, lng:9.7819656 },
+    { kat:'Kinderattraktionen', name:'Hüpfburg XXL', desc:'für alle Kinder ab dem Alter von 5 Jahren', icon:'#icon-1598-C2185B', lat:49.494478, lng:9.7818527 },
+    { kat:'Kinderattraktionen', name:'XXL Spiele', desc:'', icon:'#icon-1503-C2185B-nodesc', lat:49.494839, lng:9.7817255 },
+
+    // SICHERHEIT
+    { kat:'Sicherheit', name:'Erste Hilfe Standort', desc:'', icon:'#icon-1558-A52714-nodesc', lat:49.4934868, lng:9.7815524 },
+    { kat:'Sicherheit', name:'Erste Hilfe Station Gradierpavillon', desc:'', icon:'#icon-1558-A52714-nodesc', lat:49.4940425, lng:9.7847845 }
+];
+
+// ── Filter-Mapping ────────────────────────────────────────────────
+const filterMap = {
+    'Kinder': 'Kinderattraktionen'
+};
+
+// ── Marker verwalten ──────────────────────────────────────────────
+let activeMarkers = [];
+let activeFilter = 'all';
+
+function buildMarker(p) {
+    const color = getColor(p.kat, p.icon);
+    const emoji = getEmoji(p.kat, p.icon);
+    const catLabel = getCatLabel(p.kat);
+
+    const divIcon = L.divIcon({
+        className: '',
+        html: `<div class="map-marker" style="background:${color}">${emoji}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -18]
+    });
+
+    const popupHtml = `
+        <div class="popup-cat" style="color:${color}">${catLabel}</div>
+        <div class="popup-name">${p.name}</div>
+        ${p.desc ? `<div class="popup-desc">${p.desc}</div>` : ''}
+    `;
+
+    return L.marker([p.lat, p.lng], { icon: divIcon })
+        .bindPopup(popupHtml, { maxWidth: 260 });
+}
+
+function setFilter(filter, btn) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    activeMarkers.forEach(m => map.removeLayer(m));
+    activeMarkers = [];
+
+    const targetKat = filterMap[filter] || filter;
+
+    places.forEach(p => {
+        if (filter === 'all' || p.kat === targetKat) {
+            const m = buildMarker(p);
+            m.addTo(map);
+            activeMarkers.push(m);
         }
+    });
+}
 
-        function locateUser() { map.locate({setView: true, maxZoom: 18}); }
-        updateFilter('all', document.querySelector('.filter-btn'));
-    </script>
+// ── Standort ──────────────────────────────────────────────────────
+let locationMarker = null;
+let locationCircle = null;
+
+function locateUser() {
+    map.locate({ setView: true, maxZoom: 18 });
+}
+
+map.on('locationfound', function(e) {
+    if (locationMarker) { map.removeLayer(locationMarker); map.removeLayer(locationCircle); }
+    locationCircle = L.circle(e.latlng, {
+        radius: e.accuracy / 2,
+        color: '#005f8e', fillColor: '#005f8e', fillOpacity: 0.12, weight: 1.5
+    }).addTo(map);
+    locationMarker = L.circleMarker(e.latlng, {
+        radius: 9, color: '#fff', fillColor: '#005f8e',
+        fillOpacity: 1, weight: 3
+    }).addTo(map).bindPopup('<b>Du bist hier</b>').openPopup();
+});
+
+map.on('locationerror', function(e) {
+    alert('Standort konnte nicht ermittelt werden.\n' + e.message);
+});
+
+// ── Start ─────────────────────────────────────────────────────────
+setFilter('all', document.querySelector('.filter-btn'));
+</script>
 </body>
 </html>
