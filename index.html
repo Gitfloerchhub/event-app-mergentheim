@@ -6,6 +6,75 @@
     <title>Kurpark Navigator</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        :root { --wm-blue: #007aff; --wm-green: #7dc04c; --wm-orange: #f5a623; --bg-white: #ffffff; }
+        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: #f0f0f2; }
+        #map { height: 100vh; width: 100%; }
+        .ui-container { position: absolute; top: 20px; left: 20px; z-index: 1000; pointer-events: none; width: 280px; }
+        .card { background: var(--bg-white); padding: 15px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); pointer-events: auto; margin-bottom: 10px; }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .filter-btn { background: #f2f2f7; border: none; padding: 8px 12px; border-radius: 20px; font-weight: 600; cursor: pointer; }
+        .filter-btn.active { background: var(--wm-blue); color: white; }
+        .wm-marker { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .btn-main { width: 100%; background: var(--wm-blue); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="ui-container">
+        <div class="card"><img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo" style="height:40px;"></div>
+        <div class="card">
+            <div class="filter-group">
+                <button class="filter-btn active" onclick="updateFilter('all', this)">Alle</button>
+                <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
+                <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastro</button>
+                <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service</button>
+            </div>
+            <button class="btn-main" onclick="locateUser()">📍 Standort finden</button>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', {zoomControl: false}).setView([49.4942, 9.7825], 18);
+        L.control.zoom({position: 'topright'}).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+        const places = [
+            // DEINE 3 PRÄZISEN REFERENZPUNKTE
+            { type: 'stage', color: '#007aff', pos: [49.49360, 9.78472], title: "Musikpavillon", icon: "🎺" },
+            { type: 'stage', color: '#007aff', pos: [49.49479, 9.78164], title: "Bühne am Haus des Gastes", icon: "🎭" },
+            { type: 'stage', color: '#007aff', pos: [49.49492, 9.78106], title: "Bühne Klanggarten", icon: "🎵" },
+            // WEITERE PUNKTE (Mathematisch angepasst)
+            { type: 'food', color: '#f5a623', pos: [49.49470, 9.78150], title: "Café Haus des Gastes", icon: "☕" },
+            { type: 'food', color: '#f5a623', pos: [49.49350, 9.78430], title: "Bistro am Gradierbau", icon: "🍔" },
+            { type: 'service', color: '#7dc04c', pos: [49.49485, 9.78115], title: "WC Haus des Gastes", icon: "🚻" },
+            { type: 'service', color: '#7dc04c', pos: [49.49375, 9.78400], title: "WC am Gradierbau", icon: "🚻" }
+        ];
+
+        let currentMarkers = [];
+        function updateFilter(type, btn) {
+            if(btn) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+            currentMarkers.forEach(m => map.removeLayer(m));
+            currentMarkers = [];
+            places.forEach(p => {
+                if (type === 'all' || p.type === type) {
+                    const icon = L.divIcon({ className: 'custom-icon', html: `<div class="wm-marker" style="background:${p.color}">${p.icon}</div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
+                    const m = L.marker(p.pos, {icon: icon}).addTo(map).bindPopup(`<b>${p.title}</b>`);
+                    currentMarkers.push(m);
+                }
+            });
+        }
+        function locateUser() { map.locate({setView: true, maxZoom: 18}); }
+        updateFilter('all');
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kurpark Navigator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
         :root {
             --wm-blue: #007aff;
             --wm-green: #7dc04c;
