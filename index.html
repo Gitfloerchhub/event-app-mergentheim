@@ -9,15 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Farbpalette angelehnt an kur-badmergentheim.de */
-            --primary:   #005f8e;   /* Kurpark-Dunkelblau */
-            --accent:    #e8a020;   /* Warmes Gold/Orange  */
-            --green:     #2e7d32;   /* Sicherheit / Eingänge */
-            --red:       #c62828;   /* Erste Hilfe */
-            --purple:    #7b1fa2;   /* Getränke / Wein */
-            --food:      #0277bd;   /* Essen-Stände */
-            --kids:      #c2185b;   /* Kinder */
-            --stage:     #f9a825;   /* Bühnen */
+            --primary:   #005f8e;
+            --accent:    #e8a020;
+            --green:     #2e7d32;
+            --red:       #c62828;
+            --purple:    #7b1fa2;
+            --food:      #0277bd;
+            --kids:      #c2185b;
+            --stage:     #f9a825;
             --bg:        #f4f6f8;
             --card-bg:   #ffffff;
             --text:      #1a1a2e;
@@ -25,203 +24,35 @@
             --radius:    14px;
             --shadow:    0 4px 20px rgba(0,0,0,0.13);
         }
-
         * { box-sizing: border-box; }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        #map {
-            position: fixed;
-            top: 0; left: 0;
-            height: 100dvh;
-            width: 100vw;
-            z-index: 1;
-        }
-
-        /* ── PANEL LINKS ─────────────────────────────────── */
-        .panel {
-            position: fixed;
-            top: 16px; left: 16px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-            max-width: 300px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 14px 16px;
-            pointer-events: auto;
-        }
-
-        /* Logo-Card */
-        .logo-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-        }
+        body { margin: 0; padding: 0; font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); }
+        #map { position: fixed; top: 0; left: 0; height: 100dvh; width: 100vw; z-index: 1; }
+        .panel { position: fixed; top: 16px; left: 16px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; max-width: 300px; }
+        .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; pointer-events: auto; }
+        .logo-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
         .logo-card img { height: 38px; width: auto; }
-        .logo-title {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--primary);
-            line-height: 1.2;
-        }
-        .logo-sub {
-            font-size: 11px;
-            color: var(--subtext);
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        /* Filter-Buttons */
-        .filter-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--subtext);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 8px;
-        }
-        .filter-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .filter-btn {
-            background: var(--bg);
-            border: 1.5px solid #dce0e6;
-            padding: 6px 11px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.18s;
-            font-family: inherit;
-        }
+        .logo-title { font-size: 15px; font-weight: 800; color: var(--primary); line-height: 1.2; }
+        .logo-sub { font-size: 11px; color: var(--subtext); font-weight: 600; letter-spacing: 0.3px; }
+        .filter-label { font-size: 10px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .filter-btn { background: var(--bg); border: 1.5px solid #dce0e6; padding: 6px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.18s; font-family: inherit; }
         .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
-        .filter-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: #fff;
-        }
-
-        /* Standort-Button */
-        .btn-locate {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 11px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 13px;
-            margin-top: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
+        .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .btn-locate { width: 100%; background: var(--primary); color: white; border: none; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 13px; margin-top: 10px; cursor: pointer; transition: background 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-locate:hover { background: #004870; }
-
-        /* ── MARKER ──────────────────────────────────────── */
-        .map-marker {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            border: 2.5px solid #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.28);
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
+        .btn-wc { width: 100%; background: #e8f4fd; color: #0277bd; border: 2px solid #0288d1; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 13px; margin-top: 8px; cursor: pointer; transition: background 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+        .btn-wc:hover { background: #d0e9f9; }
+        .map-marker { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.28); cursor: pointer; transition: transform 0.15s; }
         .map-marker:hover { transform: scale(1.15); }
-
-        /* ── POPUP ───────────────────────────────────────── */
-        .leaflet-popup-content-wrapper {
-            border-radius: 12px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.16);
-            padding: 0;
-        }
-        .leaflet-popup-content {
-            margin: 0;
-            padding: 14px 16px;
-            font-family: 'Open Sans', sans-serif;
-            min-width: 180px;
-        }
-        .popup-cat {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            margin-bottom: 4px;
-        }
-        .popup-name {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-        .popup-desc {
-            font-size: 12px;
-            color: var(--subtext);
-            line-height: 1.5;
-        }
-
-        /* ── LEGENDE unten rechts ────────────────────────── */
-        .legend {
-            position: fixed;
-            bottom: 30px; right: 14px;
-            z-index: 1000;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 10px 14px;
-            pointer-events: none;
-            min-width: 140px;
-        }
-        .legend-title {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--subtext);
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            margin-bottom: 7px;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 5px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .legend-dot {
-            width: 14px; height: 14px;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-            flex-shrink: 0;
-        }
-
-        /* ── RESPONSIVE ──────────────────────────────────── */
+        .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.16); padding: 0; }
+        .leaflet-popup-content { margin: 0; padding: 14px 16px; font-family: 'Open Sans', sans-serif; min-width: 180px; }
+        .popup-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px; }
+        .popup-name { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+        .popup-desc { font-size: 12px; color: var(--subtext); line-height: 1.5; }
+        .legend { position: fixed; bottom: 30px; right: 14px; z-index: 1000; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 10px 14px; pointer-events: none; min-width: 140px; }
+        .legend-title { font-size: 10px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 7px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; font-weight: 600; color: var(--text); }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2); flex-shrink: 0; }
         @media (max-width: 480px) {
             .panel { top: 12px; left: 10px; max-width: calc(100vw - 60px); }
             .legend { bottom: 20px; right: 10px; }
@@ -232,10 +63,7 @@
 
 <div id="map"></div>
 
-<!-- Panel oben links -->
 <div class="panel">
-
-    <!-- Logo -->
     <div class="card logo-card">
         <img src="https://media.kur-badmergentheim.de/impressum/Logo_Kur_Bad_Mergentheim.png"
              onerror="this.onerror=null;this.src='https://www.bad-mergentheim.de/layout/img/logo.png'"
@@ -246,7 +74,6 @@
         </div>
     </div>
 
-    <!-- Filter -->
     <div class="card">
         <div class="filter-label">Kategorien</div>
         <div class="filter-group">
@@ -261,10 +88,12 @@
         <button class="btn-locate" onclick="locateUser()">
             <span>📍</span> Meinen Standort anzeigen
         </button>
+        <a href="wc-navigator.html" class="btn-wc">
+            <span>🚻</span> Nächstes WC finden
+        </a>
     </div>
 </div>
 
-<!-- Legende -->
 <div class="legend">
     <div class="legend-title">Legende</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div>Bühnen</div>
@@ -278,50 +107,32 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ── Karte initialisieren ─────────────────────────────────────────
-const map = L.map('map', { zoomControl: false })
-    .setView([49.4941, 9.7825], 17);
-
+const map = L.map('map', { zoomControl: false }).setView([49.4941, 9.7825], 17);
 L.control.zoom({ position: 'topright' }).addTo(map);
-
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
     maxZoom: 20
 }).addTo(map);
 
-// ── Farbschema pro Kategorie / Icon-Code ─────────────────────────
 function getColor(kategorie, iconCode) {
     if (kategorie === 'Bühnen') return '#f9a825';
     if (kategorie === 'Eingänge') return '#2e7d32';
     if (kategorie === 'Toiletten') return '#0288d1';
     if (kategorie === 'Kinderattraktionen') return '#c2185b';
     if (kategorie === 'Sicherheit') return '#c62828';
-    // Stände: Getränke (9C27B0-Icons) vs. Essen (0288D1-Icons)
     if (iconCode && iconCode.includes('9C27B0')) return '#7b1fa2';
-    return '#0277bd'; // Standard Essen / Stände
+    return '#0277bd';
 }
-
 function getCatLabel(kategorie) {
-    const map = {
-        'Stände': 'Stand',
-        'Bühnen': 'Bühne',
-        'Eingänge': 'Eingang / Service',
-        'Toiletten': 'WC',
-        'Kinderattraktionen': 'Kinder',
-        'Sicherheit': 'Sicherheit'
-    };
-    return map[kategorie] || kategorie;
+    const m = { 'Stände':'Stand','Bühnen':'Bühne','Eingänge':'Eingang / Service','Toiletten':'WC','Kinderattraktionen':'Kinder','Sicherheit':'Sicherheit' };
+    return m[kategorie] || kategorie;
 }
-
 function getEmoji(kategorie, iconCode) {
     if (kategorie === 'Bühnen') return '🎭';
     if (kategorie === 'Toiletten') return '🚻';
     if (kategorie === 'Kinderattraktionen') return '🎠';
     if (kategorie === 'Sicherheit') return '🚑';
-    if (kategorie === 'Eingänge') {
-        if (iconCode && iconCode.includes('1608')) return 'ℹ️';
-        return '🚪';
-    }
+    if (kategorie === 'Eingänge') { if (iconCode && iconCode.includes('1608')) return 'ℹ️'; return '🚪'; }
     if (iconCode && iconCode.includes('9C27B0')) return '🍷';
     if (iconCode && iconCode.includes('1798')) return '🍷';
     if (iconCode && iconCode.includes('1879')) return '🍺';
@@ -331,9 +142,7 @@ function getEmoji(kategorie, iconCode) {
     return '🍽';
 }
 
-// ── Alle Punkte aus CSV (nur Points, keine LineStrings) ──────────
 const places = [
-    // STÄNDE
     { kat:'Stände', name:'Fastnachtsgesellschaft Kalrobia', desc:'Pina Colada, Touchdown, Mojito, Virgin Colada, Florida', icon:'#icon-1517-9C27B0-labelson', lat:49.4945694, lng:9.7807093 },
     { kat:'Stände', name:'derr Hof', desc:'hausgebrautes Bio-Bier, selbstgemachte Limonade, alkoholfreie Getränke', icon:'#icon-1879-9C27B0-labelson', lat:49.494788, lng:9.7805968 },
     { kat:'Stände', name:'Fastnachtsgesellschaft Kalrobia', desc:'Wagyu Burger', icon:'#icon-1577-0288D1-labelson', lat:49.4946731, lng:9.7805888 },
@@ -358,46 +167,31 @@ const places = [
     { kat:'Stände', name:"Cakmak's Langosch", desc:'Langosch, alkoholfreie Getränke', icon:'#icon-1577-0288D1-labelson', lat:49.493881, lng:9.7847178 },
     { kat:'Stände', name:'Pizzeria im Weberdorf', desc:'', icon:'#icon-1651-0288D1-labelson-nodesc', lat:49.4949388, lng:9.781999 },
     { kat:'Stände', name:"Rols's New York Cheesecake", desc:'Schokofrüchte, hausgemachter New York Cheesecake', icon:'#icon-1577-0288D1-labelson', lat:49.4940534, lng:9.7817217 },
-
-    // BÜHNEN
     { kat:'Bühnen', name:'Bühne Kurhaus', desc:'', icon:'#icon-1502-FFD600-labelson-nodesc', lat:49.4948325, lng:9.7810359 },
     { kat:'Bühnen', name:'Bühne Wilhelmsbau', desc:'17:00–19:30 Uhr Denise & Tobi · 20:00–24:00 Uhr TONeArt', icon:'#icon-1502-FFEA00-labelson', lat:49.4946445, lng:9.7816581 },
     { kat:'Bühnen', name:'Bühne Musikpavillon', desc:'', icon:'#icon-1502-FFD600-labelson', lat:49.4935978, lng:9.7847072 },
     { kat:'Bühnen', name:'Treffpunkt "Lichtkinder"', desc:'Kinder 8–12 Jahre helfen beim Aufstellen und Anzünden der bunten Lichter. Start: 19:15 Uhr', icon:'#icon-1729-E65100-labelson', lat:49.4945264, lng:9.7829693 },
     { kat:'Bühnen', name:'ArtCafé Juhee', desc:'Kaffee, Frappé, Chai Latte, Kakao, Matcha, Tee & kleines Gebäck', icon:'#icon-1534-9C27B0-labelson', lat:49.4946426, lng:9.7812668 },
-
-    // EINGÄNGE
     { kat:'Eingänge', name:'Eingang Lothar-Daiker-Straße', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.495326, lng:9.7816901 },
     { kat:'Eingänge', name:'Eingang Rosengarten', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.493567, lng:9.7880117 },
-    { kat:'Eingänge', name:'Eingang Schachbrett', desc:'Eintrittspreise: Regulär 5 €, Ermäßigt 3 € – Kinder und Schwangere frei', icon:'#icon-1833-097138-labelson', lat:49.4934654, lng:9.7817384 },
+    { kat:'Eingänge', name:'Eingang Schachbrett', desc:'Eintrittspreise: Regulär 5€, Ermäßigt 3€ – Kinder und Schwangere frei', icon:'#icon-1833-097138-labelson', lat:49.4934654, lng:9.7817384 },
     { kat:'Eingänge', name:'Eingang Tauberbrücke', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.4937546, lng:9.7800325 },
     { kat:'Eingänge', name:'Servicepunkt', desc:'Haus des Gastes · ☎ 07931 965 0 · Fundbüro · Suchaufrufe · Infostelle', icon:'#icon-1608-01579B-labelson', lat:49.4936936, lng:9.7818321 },
     { kat:'Eingänge', name:'Eingang Café Amadeus', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.4931736, lng:9.7845548 },
     { kat:'Eingänge', name:'Eingang Klinik Schwaben', desc:'', icon:'#icon-1833-097138-labelson-nodesc', lat:49.4940098, lng:9.7858315 },
-
-    // TOILETTEN
     { kat:'Toiletten', name:'WC', desc:'im Haus des Gastes, barrierefrei', icon:'#icon-1733-0288D1', lat:49.4938175, lng:9.7817386 },
     { kat:'Toiletten', name:'WC', desc:'Toilettenwagen an der Fontäne', icon:'#icon-1733-0288D1', lat:49.4941201, lng:9.781269 },
     { kat:'Toiletten', name:'WC', desc:'', icon:'#icon-1733-0288D1-nodesc', lat:49.4940068, lng:9.7828274 },
     { kat:'Toiletten', name:'WC', desc:'am Café Amadeus, barrierefrei', icon:'#icon-1733-0288D1', lat:49.4934065, lng:9.7839551 },
-
-    // KINDERATTRAKTIONEN
     { kat:'Kinderattraktionen', name:'Eisenbahn', desc:'', icon:'#icon-1717-C2185B-nodesc', lat:49.4942882, lng:9.7815712 },
     { kat:'Kinderattraktionen', name:'Hüpfburg Minis', desc:'Hüpfburg nur für Kinder bis zum Alter von 4 Jahren', icon:'#icon-1598-C2185B', lat:49.4943491, lng:9.7819656 },
     { kat:'Kinderattraktionen', name:'Hüpfburg XXL', desc:'für alle Kinder ab dem Alter von 5 Jahren', icon:'#icon-1598-C2185B', lat:49.494478, lng:9.7818527 },
     { kat:'Kinderattraktionen', name:'XXL Spiele', desc:'', icon:'#icon-1503-C2185B-nodesc', lat:49.494839, lng:9.7817255 },
-
-    // SICHERHEIT
     { kat:'Sicherheit', name:'Erste Hilfe Standort', desc:'', icon:'#icon-1558-A52714-nodesc', lat:49.4934868, lng:9.7815524 },
     { kat:'Sicherheit', name:'Erste Hilfe Station Gradierpavillon', desc:'', icon:'#icon-1558-A52714-nodesc', lat:49.4940425, lng:9.7847845 }
 ];
 
-// ── Filter-Mapping ────────────────────────────────────────────────
-const filterMap = {
-    'Kinder': 'Kinderattraktionen'
-};
-
-// ── Marker verwalten ──────────────────────────────────────────────
+const filterMap = { 'Kinder': 'Kinderattraktionen' };
 let activeMarkers = [];
 let activeFilter = 'all';
 
@@ -405,35 +199,26 @@ function buildMarker(p) {
     const color = getColor(p.kat, p.icon);
     const emoji = getEmoji(p.kat, p.icon);
     const catLabel = getCatLabel(p.kat);
-
     const divIcon = L.divIcon({
         className: '',
         html: `<div class="map-marker" style="background:${color}">${emoji}</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -18]
+        iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18]
     });
-
     const popupHtml = `
         <div class="popup-cat" style="color:${color}">${catLabel}</div>
         <div class="popup-name">${p.name}</div>
         ${p.desc ? `<div class="popup-desc">${p.desc}</div>` : ''}
     `;
-
-    return L.marker([p.lat, p.lng], { icon: divIcon })
-        .bindPopup(popupHtml, { maxWidth: 260 });
+    return L.marker([p.lat, p.lng], { icon: divIcon }).bindPopup(popupHtml, { maxWidth: 260 });
 }
 
 function setFilter(filter, btn) {
     activeFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-
     activeMarkers.forEach(m => map.removeLayer(m));
     activeMarkers = [];
-
     const targetKat = filterMap[filter] || filter;
-
     places.forEach(p => {
         if (filter === 'all' || p.kat === targetKat) {
             const m = buildMarker(p);
@@ -443,31 +228,16 @@ function setFilter(filter, btn) {
     });
 }
 
-// ── Standort ──────────────────────────────────────────────────────
 let locationMarker = null;
 let locationCircle = null;
-
-function locateUser() {
-    map.locate({ setView: true, maxZoom: 18 });
-}
-
+function locateUser() { map.locate({ setView: true, maxZoom: 18 }); }
 map.on('locationfound', function(e) {
     if (locationMarker) { map.removeLayer(locationMarker); map.removeLayer(locationCircle); }
-    locationCircle = L.circle(e.latlng, {
-        radius: e.accuracy / 2,
-        color: '#005f8e', fillColor: '#005f8e', fillOpacity: 0.12, weight: 1.5
-    }).addTo(map);
-    locationMarker = L.circleMarker(e.latlng, {
-        radius: 9, color: '#fff', fillColor: '#005f8e',
-        fillOpacity: 1, weight: 3
-    }).addTo(map).bindPopup('<b>Du bist hier</b>').openPopup();
+    locationCircle = L.circle(e.latlng, { radius: e.accuracy/2, color:'#005f8e', fillColor:'#005f8e', fillOpacity:0.12, weight:1.5 }).addTo(map);
+    locationMarker = L.circleMarker(e.latlng, { radius:9, color:'#fff', fillColor:'#005f8e', fillOpacity:1, weight:3 }).addTo(map).bindPopup('<b>Du bist hier</b>').openPopup();
 });
+map.on('locationerror', function(e) { alert('Standort konnte nicht ermittelt werden.\n' + e.message); });
 
-map.on('locationerror', function(e) {
-    alert('Standort konnte nicht ermittelt werden.\n' + e.message);
-});
-
-// ── Start ─────────────────────────────────────────────────────────
 setFilter('all', document.querySelector('.filter-btn'));
 </script>
 </body>
