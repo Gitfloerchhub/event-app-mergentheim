@@ -13,90 +13,86 @@
         }
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         #map { height: 100vh; width: 100%; }
-        
         .map-logo {
             position: absolute; top: 15px; left: 15px; z-index: 1000;
             background: white; padding: 8px; border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2); max-width: 140px;
         }
-
         .filter-panel {
             position: absolute; top: 100px; left: 15px; z-index: 1000;
             display: flex; flex-direction: column; gap: 5px;
         }
-
         .filter-btn {
             background: white; border: 1px solid var(--primary-blue);
             padding: 10px 15px; cursor: pointer; border-radius: 4px;
             font-weight: bold; color: var(--primary-blue); text-align: left;
+            min-width: 160px;
         }
-
         .filter-btn.active { background: var(--primary-blue); color: white; }
-
         .info-panel {
             position: absolute; bottom: 25px; left: 15px; z-index: 1000;
             background: white; padding: 15px; border-radius: 4px;
             border-top: 4px solid var(--primary-blue);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 260px;
         }
-
         .btn-kbm {
             width: 100%; margin-top: 8px; padding: 12px;
             border: 1px solid var(--primary-blue); background: white;
             color: var(--primary-blue); font-weight: bold; cursor: pointer;
+            text-transform: uppercase;
         }
         .btn-kbm:hover { background: var(--primary-blue); color: white; }
-        
         .popup-img { width: 100%; border-radius: 4px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div id="map"></div>
-
     <div class="map-logo">
         <img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo" style="width:100%;">
     </div>
 
     <div class="filter-panel">
-        <button class="filter-btn active" onclick="updateFilter('all', this)">Alle anzeigen</button>
+        <button class="filter-btn active" onclick="updateFilter('all', this)">🌟 Alle anzeigen</button>
         <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
         <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastronomie</button>
         <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service & WCs</button>
-        <button class="filter-btn" onclick="updateFilter('parking', this)">🅿️ Parken</button>
+        <button class="filter-btn" onclick="updateFilter('parking', this)">🅿️ Parkplätze</button>
     </div>
 
     <div class="info-panel">
-        <h3 style="margin:0 0 10px 0; color:var(--primary-blue);">Kurpark Navigator</h3>
+        <h3 style="margin:0 0 10px 0; color:var(--primary-blue);">Kurpark App</h3>
         <button class="btn-kbm" onclick="locateUser()">📍 Mein Standort</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map', {zoomControl: false}).setView([49.4942, 9.7825], 18);
+        const map = L.map('map', {zoomControl: false}).setView([49.4945, 9.7830], 17);
         L.control.zoom({position: 'topright'}).addTo(map);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // DEINE DATEN AUS DER GOOGLE KARTE
         const places = [
             // BÜHNEN
-            { type: 'stage', pos: [49.4952, 9.7825], title: "Große Bühne (Wandelhalle)", img: "https://www.bad-mergentheim.de/de/tourismus/kurpark/wandelhalle-id_164/images/wandelhalle.jpg" },
-            { type: 'stage', pos: [49.4940, 9.7830], title: "Musikmuschel", img: "" },
-            { type: 'stage', pos: [49.4958, 9.7845], title: "Klanggarten Bühne", img: "" },
+            { type: 'stage', pos: [49.49528, 9.78255], title: "Wandelhalle Bühne", img: "https://media.kur-badmergentheim.de/fileadmin/_processed_/c/6/csm_Wandelhalle_Aussen_01_da0b1b1b1b.jpg" },
+            { type: 'stage', pos: [49.49410, 9.78325], title: "Musikmuschel", img: "" },
+            { type: 'stage', pos: [49.49580, 9.78440], title: "Bühne im Klanggarten", img: "" },
             
             // GASTRO
-            { type: 'food', pos: [49.4948, 9.7815], title: "Café Haus des Gastes", img: "https://www.bad-mergentheim.de/de/tourismus/kurpark/haus-des-gastes-id_163/images/haus_des_gastes.jpg" },
-            { type: 'food', pos: [49.4935, 9.7840], title: "Bistro am Gradierbau", img: "" },
-            { type: 'food', pos: [49.4945, 9.7820], title: "Weinstand", img: "" },
+            { type: 'food', pos: [49.49475, 9.78165], title: "Café Haus des Gastes", img: "https://media.kur-badmergentheim.de/fileadmin/_processed_/5/a/csm_Haus_des_Gastes_01_a2f8b8b8b8.jpg" },
+            { type: 'food', pos: [49.49360, 9.78420], title: "Bistro am Gradierbau", img: "" },
+            { type: 'food', pos: [49.49430, 9.78230], title: "Weinstand / Außenbar", img: "" },
+            { type: 'food', pos: [49.49510, 9.78380], title: "Food-Truck Area", img: "" },
 
-            // SERVICE
-            { type: 'service', pos: [49.4949, 9.7812], title: "WC Haus des Gastes", img: "" },
-            { type: 'service', pos: [49.4938, 9.7838], title: "WC Gradierbau", img: "" },
-            { type: 'service', pos: [49.4955, 9.7828], title: "Erste Hilfe / Info", img: "" },
+            // SERVICE / WCs
+            { type: 'service', pos: [49.49490, 9.78130], title: "WC Haus des Gastes", img: "" },
+            { type: 'service', pos: [49.49380, 9.78390], title: "WC am Gradierbau", img: "" },
+            { type: 'service', pos: [49.49560, 9.78290], title: "Erste Hilfe & Info", img: "" },
+            { type: 'service', pos: [49.49445, 9.78190], title: "Eingang / Ticket-Kasse", img: "" },
 
             // PARKEN
-            { type: 'parking', pos: [49.4930, 9.7810], title: "Parkplatz P1", img: "" },
-            { type: 'parking', pos: [49.4965, 9.7850], title: "Parkplatz P2", img: "" }
+            { type: 'parking', pos: [49.49280, 9.78080], title: "Parkplatz P1", img: "" },
+            { type: 'parking', pos: [49.49620, 9.78520], title: "Parkplatz P2", img: "" },
+            { type: 'parking', pos: [49.49350, 9.77950], title: "Parkplatz P3", img: "" }
         ];
 
         let currentMarkers = [];
@@ -110,157 +106,9 @@
 
             places.forEach(p => {
                 if (type === 'all' || p.type === type) {
-                    let content = `<div style="min-width:150px;"><b>${p.title}</b>`;
+                    let content = `<div style="min-width:180px;"><b>${p.title}</b>`;
                     if(p.img) content = `<img src="${p.img}" class="popup-img">` + content;
                     content += `</div>`;
-                    const m = L.marker(p.pos).addTo(map).bindPopup(content);
-                    currentMarkers.push(m);
-                }
-            });
-        }
-
-        function locateUser() { map.locate({setView: true, maxZoom: 18}); }
-        updateFilter('all', document.querySelector('.filter-btn'));
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event-App Kurpark Bad Mergentheim</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <style>
-        :root {
-            --primary-blue: #003366; /* Offizielles KBM Blau */
-            --accent-blue: #226699;
-            --border-gray: #d9d9d9;
-            --white: #ffffff;
-        }
-
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        #map { height: 100vh; width: 100%; }
-
-        /* LOGO OBEN LINKS */
-        .map-logo {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 1000;
-            background: white;
-            padding: 8px;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            max-width: 140px;
-        }
-
-        /* FILTER PANEL */
-        .filter-panel {
-            position: absolute;
-            top: 100px;
-            left: 15px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-btn {
-            background: white;
-            border: 1px solid var(--primary-blue);
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-            color: var(--primary-blue);
-            text-align: left;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .filter-btn.active {
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        /* INFO PANEL UNTEN */
-        .info-panel {
-            position: absolute;
-            bottom: 25px;
-            left: 15px;
-            z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 4px;
-            border-top: 4px solid var(--primary-blue);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            max-width: 260px;
-        }
-
-        .btn-kbm {
-            width: 100%;
-            margin-top: 8px;
-            padding: 10px;
-            border: 1px solid var(--primary-blue);
-            background: white;
-            color: var(--primary-blue);
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        .btn-kbm:hover { background: var(--primary-blue); color: white; }
-
-        .popup-img { width: 100%; border-radius: 4px; margin-bottom: 5px; }
-    </style>
-</head>
-<body>
-
-    <div id="map"></div>
-
-    <div class="map-logo">
-        <img src="https://www.bad-mergentheim.de/layout/img/logo.png" alt="Logo" style="width:100%;">
-    </div>
-
-    <div class="filter-panel">
-        <button class="filter-btn active" onclick="updateFilter('all', this)">Alle</button>
-        <button class="filter-btn" onclick="updateFilter('stage', this)">🎭 Bühnen</button>
-        <button class="filter-btn" onclick="updateFilter('food', this)">🍔 Gastro</button>
-        <button class="filter-btn" onclick="updateFilter('service', this)">🚻 Service</button>
-    </div>
-
-    <div class="info-panel">
-        <h3 style="margin-top:0; color:var(--primary-blue);">Kurpark App</h3>
-        <button class="btn-kbm" onclick="locateUser()">📍 Mein Standort</button>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map', {zoomControl: false}).setView([49.4950, 9.7820], 17);
-        L.control.zoom({position: 'topright'}).addTo(map);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-        const places = [
-            { type: 'stage', pos: [49.4952, 9.7825], title: "Wandelhalle / Bühne", img: "https://media.kur-badmergentheim.de/fileadmin/_processed_/c/6/csm_Wandelhalle_Aussen_01_da0b1b1b1b.jpg" },
-            { type: 'food', pos: [49.4948, 9.7815], title: "Haus des Gastes / Café", img: "https://media.kur-badmergentheim.de/fileadmin/_processed_/5/a/csm_Haus_des_Gastes_01_a2f8b8b8b8.jpg" },
-            { type: 'service', pos: [49.4945, 9.7830], title: "WC Anlagen", img: "" }
-        ];
-
-        let currentMarkers = [];
-
-        function updateFilter(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            currentMarkers.forEach(m => map.removeLayer(m));
-            currentMarkers = [];
-
-            places.forEach(p => {
-                if (type === 'all' || p.type === type) {
-                    let content = `<b>${p.title}</b>`;
-                    if(p.img) content = `<img src="${p.img}" class="popup-img">` + content;
                     const m = L.marker(p.pos).addTo(map).bindPopup(content);
                     currentMarkers.push(m);
                 }
