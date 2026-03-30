@@ -1,2 +1,2 @@
-# event-app-mergentheim
-Event-app fürs Kurparkfest 2026
+# Event-App Kurpark Bad Mergentheim
+Eine interaktive Karte für den Kurpark Bad Mergentheim mit Leaflet.js und OpenStreetMap.
